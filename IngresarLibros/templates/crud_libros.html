@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD Libros</title>
+</head>
+<body>
+    <h1>CRUD de Libros</h1>
+
+    <!-- Formulario para agregar un libro -->
+    <h2>Agregar Libro</h2>
+    <form action="{% url 'crud_libros' %}" method="POST">
+        {% csrf_token %}
+        <label for="titulo">Título:</label>
+        <input type="text" name="titulo" required>
+        <label for="autor">Autor:</label>
+        <input type="text" name="autor" required>
+        <button type="submit" name="agregar_libro">Agregar</button>
+    </form>
+
+    <!-- Tabla para mostrar los libros -->
+    <h2>Lista de Libros</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Título</th>
+                <th>Autor</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for libro in libros %}
+                <tr>
+                    <td>{{ libro.id }}</td>
+                    <td>{{ libro.titulo }}</td>
+                    <td>{{ libro.autor }}</td>
+                    <td>
+                        <!-- Botón para editar un libro -->
+                        <button onclick="editarLibro({{ libro.id }}, '{{ libro.titulo }}', '{{ libro.autor }}')">Editar</button>
+
+                        <!-- Formulario para borrar un libro -->
+                        <form action="{% url 'crud_libros' %}" method="POST" style="display:inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="libro_id" value="{{ libro.id }}">
+                            <button type="submit" name="borrar_libro">Borrar</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Formulario para actualizar un libro (oculto inicialmente) -->
+    <h2>Editar Libro</h2>
+    <form id="form-editar" action="{% url 'crud_libros' %}" method="POST" style="display:none;">
+        {% csrf_token %}
+        <input type="hidden" name="libro_id" id="libro_id">
+        <label for="titulo">Título:</label>
+        <input type="text" name="titulo" id="titulo" required>
+        <label for="autor">Autor:</label>
+        <input type="text" name="autor" id="autor" required>
+        <button type="submit" name="actualizar_libro">Actualizar</button>
+        <button type="button" onclick="cancelarEdicion()">Cancelar</button>
+    </form>
+
+    <!-- Script para manejar la edición -->
+    <script>
+        function editarLibro(id, titulo, autor) {
+            // Mostrar el formulario de edición
+            document.getElementById("form-editar").style.display = "block";
+
+            // Rellenar los campos del formulario con los datos del libro
+            document.getElementById("libro_id").value = id;
+            document.getElementById("titulo").value = titulo;
+            document.getElementById("autor").value = autor;
+        }
+
+        function cancelarEdicion() {
+            // Ocultar el formulario de edición
+            document.getElementById("form-editar").style.display = "none";
+        }
+    </script>
+</body>
+</html>

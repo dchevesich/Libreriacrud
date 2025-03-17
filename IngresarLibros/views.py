@@ -1,40 +1,39 @@
-from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import Libro
-# Create your views here.
 
 
-def AgregandoLibro(request):
-
-    if request.method == 'POST':
-        titulo = request.POST.get('titulo')
-        autor = request.POST.get('autor')
-
+def crud_libros(request):
+    # Procesar solicitud POST para agregar un libro
+    if request.method == "POST" and "agregar_libro" in request.POST:
+        titulo = request.POST.get("titulo")
+        autor = request.POST.get("autor")
         if titulo and autor:
-            libro = Libro.objects.create(
-                titulo=titulo,
-                autor=autor
-            )
-            return redirect('libros/')
-    return render(request, 'base.html')
+            Libro.objects.create(titulo=titulo, autor=autor)
+        return redirect("crud_libros")  # Recargar la página después de agregar
 
+    # Procesar solicitud POST para actualizar un libro
+    if request.method == "POST" and "actualizar_libro" in request.POST:
+        libro_id = request.POST.get("libro_id")
+        titulo = request.POST.get("titulo")
+        autor = request.POST.get("autor")
+        if libro_id and titulo and autor:
+            libro = get_object_or_404(Libro, id=libro_id)
+            libro.titulo = titulo
+            libro.autor = autor
+            libro.save()
+        # Recargar la página después de actualizar
+        return redirect("crud_libros")
 
-def mostrarLibros(request):
-    libros = Libro.objects.all()  # se obtienen todos los libros
-    return render(request, 'mostrar_libros.html', {"libros": libros})
-
-
-def borrando(request):
-    if request.method == "POST":
-        # Obtener el ID ingresado en el formulario
+    # Procesar solicitud POST para borrar un libro
+    if request.method == "POST" and "borrar_libro" in request.POST:
         libro_id = request.POST.get("libro_id")
         try:
-            # Buscar el libro en la base de datos
             libro = Libro.objects.get(id=libro_id)
-            libro.delete()  # Eliminar el libro
+            libro.delete()
         except Libro.DoesNotExist:
-            pass  # Si el libro no existe, no hacer nada
+            pass  # Manejar el error si el libro no existe
+        return redirect("crud_libros")  # Recargar la página después de borrar
 
-        # Redirigir a la lista de libros
-        return redirect("libros/")
-    return render(request, "libros/")  # Mostrar el formulario
+    # Obtener todos los libros para mostrar en la página
+    libros = Libro.objects.all()
+    return render(request, 'crud_libros.html', {"libros": libros})
